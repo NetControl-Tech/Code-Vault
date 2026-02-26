@@ -1,0 +1,43 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\UserController;
+
+Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Auth routes
+    Route::post('/verify-2fa', [AuthController::class, 'verify2FA'])->name('auth.verify-2fa');
+    Route::post('/resend-2fa', [AuthController::class, 'resend2FA'])->middleware('throttle:1,1')->name('auth.resend-2fa');
+
+    Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+    Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
+
+    /*
+|--------------------------------------------------------------------------
+| User Management Routes (مسارات إدارة المستخدمين)
+|--------------------------------------------------------------------------
+*/
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('users.index');
+        Route::post('/', [UserController::class, 'store'])->name('users.store');
+        Route::get('/{user}', [UserController::class, 'show'])->name('users.show');
+        Route::put('/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::post('/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
+
+
+    // RBAC Routes (Super Admin Only)
+    Route::middleware(['auth:sanctum', 'role:super-admin'])->group(function () {
+        Route::apiResource('roles', RoleController::class);
+        Route::post('roles/{role}/permissions', [RoleController::class, 'syncPermissions']);
+        Route::apiResource('permissions', PermissionController::class);
+        Route::post('setting/update', [SettingController::class, 'update'])->name('setting.update');
+        Route::apiResource('setting', SettingController::class)->names('setting')->except(['update']);
+    });
+});

@@ -1,0 +1,185 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
+use App\Http\Resources\UserResource;
+use App\Mail\TwoFactorCodeMail;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+
+/**
+ * Authentication Controller
+ */
+class AuthController extends Controller
+{
+    /**
+     * Login user and create token.
+     */
+    public function login(LoginRequest $request): JsonResponse
+    {
+        // Find user
+        $user = User::where('email', $request->email)->first();
+
+        // Check credentials
+        if (!$user || !Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials',
+            ], 401);
+        }
+
+        // Check if user is active
+        if (!$user->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Account is disabled. Please contact the administrator',
+            ], 403);
+        }
+
+        // Generate 2FA Code
+        $code = (string) random_int(100000, 999999);
+
+        // Save hashed code and expiration
+        $user->two_factor_code = Hash::make($code);
+        $user->two_factor_expires_at = now()->addMinutes(10);
+        $user->save();
+
+        // Send Email
+        Mail::to($user)->send(new TwoFactorCodeMail($code));
+
+        // Create temporary token for 2FA validation
+        $token = $user->createToken('2fa-token', ['2fa'], now()->addHours(24))->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
+            'requires_2fa' => true,
+            'data' => [
+                'temp_token' => $token,
+            ],
+        ]);
+    }
+
+    /**
+     * Verify 2FA code.
+     */
+    public function verify2FA(Request $request): JsonResponse
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+        ]);
+
+        $user = $request->user();
+
+        // Check if token has 2fa ability
+        if (!$user->currentAccessToken()->can('2fa')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid token type',
+            ], 403);
+        }
+
+        // Check code expiration
+        if (!$user->two_factor_expires_at || $user->two_factor_expires_at->isPast()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'انتهت صلاحية الرمز، يرجى طلب رمز جديد',
+            ], 400);
+        }
+
+        // Check code validity
+        if (!Hash::check($request->code, $user->two_factor_code)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'رمز التحقق غير صحيح',
+            ], 400);
+        }
+
+        // Clear 2FA fields
+        $user->two_factor_code = null;
+        $user->two_factor_expires_at = null;
+        $user->save();
+
+        // Delete temporary token
+        /** @var \Laravel\Sanctum\PersonalAccessToken $token */
+        $currentToken = $user->currentAccessToken();
+        if ($currentToken) {
+            $currentToken->delete();
+        }
+
+        // Issue full token
+        $token = $user->createToken('auth-token', ['*'])->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful',
+            'data' => [
+                'user' => new UserResource($user),
+                'token' => $token,
+            ],
+        ]);
+    }
+
+    /**
+     * Resend 2FA code.
+     */
+    public function resend2FA(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user->currentAccessToken()->can('2fa')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid token type',
+            ], 403);
+        }
+
+        // Generate new 2FA Code
+        $code = (string) random_int(100000, 999999);
+
+        // Save hashed code and expiration
+        $user->two_factor_code = Hash::make($code);
+        $user->two_factor_expires_at = now()->addMinutes(10);
+        $user->save();
+
+        // Send Email
+        Mail::to($user)->send(new TwoFactorCodeMail($code));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إرسال رمز التحقق مجدداً إلى بريدك الإلكتروني',
+        ]);
+    }
+
+    /**
+     * Logout user (revoke token).
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logout successful',
+        ]);
+    }
+
+    /**
+     * Get current authenticated user.
+     */
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'success' => true,
+            'data' => new UserResource($user),
+        ]);
+    }
+}

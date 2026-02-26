@@ -1,0 +1,286 @@
+@import "tailwindcss";
+
+/* Custom theme configuration for Tailwind v4 */
+@theme {
+    --color-primary-50: #f0f9ff;
+    --color-primary-100: #e0f2fe;
+    --color-primary-200: #bae6fd;
+    --color-primary-300: #7dd3fc;
+    --color-primary-400: #38bdf8;
+    --color-primary-500: #0ea5e9;
+    --color-primary-600: #0284c7;
+    --color-primary-700: #0369a1;
+    --color-primary-800: #075985;
+    --color-primary-900: #0c4a6e;
+
+    --color-dark-900: #0f172a;
+    --color-dark-800: #1e293b;
+    --color-dark-700: #334155;
+    --color-dark-600: #475569;
+}
+
+/* Dark mode support */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Custom component styles */
+@layer components {
+    /* Form inputs */
+    .input {
+        @apply w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 
+           bg-white dark:bg-slate-800 text-slate-900 dark:text-white 
+           placeholder:text-slate-400 dark:placeholder:text-slate-500
+           focus:ring-2 focus:ring-sky-500 focus:border-transparent focus:outline-none
+           transition-all duration-200;
+    }
+
+    /* Buttons */
+    .btn {
+        @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200 cursor-pointer
+           focus:outline-none focus:ring-2 focus:ring-offset-2 
+           dark:focus:ring-offset-slate-900 inline-flex items-center justify-center gap-2;
+    }
+
+    .btn-primary {
+        @apply bg-sky-600 hover:bg-sky-700 text-white 
+           focus:ring-sky-500 disabled:opacity-60 disabled:cursor-not-allowed;
+    }
+
+    .btn-secondary {
+        @apply bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 
+           dark:hover:bg-slate-600 text-slate-900 dark:text-white;
+    }
+
+    .btn-danger {
+        @apply bg-red-600 hover:bg-red-700 text-white focus:ring-red-500;
+    }
+
+    /* Cards */
+    .card {
+        @apply bg-white dark:bg-slate-800 rounded-xl shadow-lg 
+           border border-slate-200 dark:border-slate-700;
+    }
+
+    /* Table styles */
+    .table-container {
+        @apply overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700;
+    }
+
+    .table {
+        @apply w-full text-right;
+    }
+
+    .table th {
+        @apply bg-slate-100 dark:bg-slate-700 px-4 py-3 text-sm font-semibold 
+           text-slate-700 dark:text-slate-200 uppercase tracking-wider;
+    }
+
+    .table td {
+        @apply px-4 py-3 border-t border-slate-200 dark:border-slate-700
+           text-slate-800 dark:text-slate-200;
+    }
+
+    .table tr:hover td {
+        @apply bg-slate-50 dark:bg-slate-700/50;
+    }
+
+    /* Badge */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    .badge-success {
+        @apply bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300;
+    }
+
+    .badge-warning {
+        @apply bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300;
+    }
+
+    .badge-info {
+        @apply bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300;
+    }
+
+    /* Sidebar */
+    .sidebar-link {
+        @apply flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-300
+           hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200;
+    }
+
+    .sidebar-link.active {
+        @apply bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400
+           font-medium;
+    }
+}
+
+@layer components {
+    /* PrimeVue Global Overrides */
+    .p-component {
+        @apply font-sans;
+    }
+
+    /* Inputs (InputText, TextArea, InputNumber) */
+    .p-inputtext {
+        @apply w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-600 
+           bg-white dark:bg-slate-800 text-slate-900 dark:text-gray-100 
+           placeholder:text-slate-400 dark:placeholder:text-slate-500
+           transition-all duration-200 shadow-sm
+           hover:border-slate-400 dark:hover:border-slate-500
+           focus:border-sky-500 dark:focus:border-sky-500 
+           focus:ring-2 focus:ring-sky-500/20 focus:outline-none;
+    }
+
+    .p-inputtext:disabled {
+        @apply opacity-70 cursor-not-allowed bg-slate-100 dark:bg-slate-700 text-slate-500 ;
+    }
+
+    /* Select (Dropdown) & MultiSelect */
+    .p-select,
+    .p-multiselect {
+        @apply w-full rounded-lg border border-slate-300 dark:border-slate-600 
+           bg-white dark:bg-slate-800 text-slate-900 dark:text-gray-100
+           transition-all duration-200 shadow-sm flex items-center
+           hover:border-slate-400 dark:hover:border-slate-500 ;
+    }
+
+    .p-select:not(.p-disabled).p-focus,
+    .p-multiselect:not(.p-disabled).p-focus {
+        @apply border-sky-500 dark:border-sky-500 ring-2 ring-sky-500/20 outline-none ;
+    }
+
+    .p-select-label,
+    .p-multiselect-label {
+        @apply px-4 py-3 text-slate-900 dark:text-gray-100 ;
+    }
+
+    .p-select-dropdown,
+    .p-multiselect-dropdown {
+        @apply w-10 text-slate-500 dark:text-slate-400 ;
+    }
+
+    /* Overlays/Panels (Dropdown list, Datepicker panel) */
+    .p-select-overlay,
+    .p-multiselect-overlay,
+    .p-datepicker,
+    .p-dialog,
+    .p-popover,
+    .p-cascadeselect-overlay {
+        @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 
+           rounded-xl shadow-xl ;
+    }
+
+    .p-select-list-container,
+    .p-multiselect-list-container {
+        @apply p-1 ;
+    }
+
+    .p-select-option,
+    .p-multiselect-option {
+        @apply px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 
+           transition-colors duration-150 cursor-pointer my-0.5 ;
+    }
+
+    .p-select-option:not(.p-select-option-selected):not(.p-disabled).p-focus,
+    .p-multiselect-option:not(.p-multiselect-option-selected):not(.p-disabled).p-focus {
+        @apply bg-slate-100 dark:bg-slate-700/50 text-slate-900 dark:text-white ;
+    }
+
+    .p-select-option.p-select-option-selected,
+    .p-multiselect-option.p-multiselect-option-selected {
+        @apply bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 font-medium ;
+    }
+
+    /* DatePicker Specifics */
+    .p-datepicker-header {
+        @apply bg-transparent border-b border-slate-200 dark:border-slate-700 p-3 
+           text-slate-800 dark:text-white ;
+    }
+
+    .p-datepicker-title {
+        @apply text-slate-800 dark:text-white font-semibold ;
+    }
+
+    .p-datepicker table th {
+        @apply text-slate-500 dark:text-slate-400 font-medium p-2 ;
+    }
+    
+    .p-datepicker table td {
+        @apply p-1 ;
+    }
+
+    .p-datepicker table td > span.p-datepicker-day:not(.p-datepicker-day-selected):not(.p-disabled):hover {
+        @apply bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white ;
+    }
+
+    .p-datepicker table td > span.p-datepicker-day-selected {
+        @apply bg-sky-600 text-white ;
+    }
+    
+    .p-datepicker table td > span.p-datepicker-today > span {
+         @apply bg-slate-100 dark:bg-slate-700 rounded-full ;
+    }
+
+    /* Dialog Global Refinement */
+    .p-dialog-header {
+        @apply bg-transparent border-b border-slate-200 dark:border-slate-700 p-5 
+           text-slate-800 dark:text-white items-center ;
+    }
+
+    .p-dialog-title {
+        @apply text-xl font-bold ;
+    }
+
+    .p-dialog-content {
+        @apply bg-transparent p-6 text-slate-700 dark:text-slate-300 ;
+    }
+
+    .p-dialog-footer {
+        @apply bg-transparent border-t border-slate-200 dark:border-slate-700 p-5 gap-2 ;
+    }
+
+    .p-dialog-header-actions button {
+        @apply text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 
+           hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-full w-8 h-8 transition-colors ;
+    }
+    
+    /* Checkbox */
+    .p-checkbox-box {
+        @apply rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800
+           peer-focus:ring-2 peer-focus:ring-sky-500/20 ;
+    }
+    
+    .p-checkbox-checked .p-checkbox-box {
+        @apply bg-sky-600 border-sky-600 text-white ;
+    }
+}
+
+/* Base styles */
+@layer base {
+    body {
+        @apply bg-white dark:bg-slate-900 text-slate-800 dark:text-white transition-colors duration-200;
+        font-family: "Inter", system-ui, sans-serif;
+    }
+
+    /* Global RTL Support */
+    html {
+        direction: rtl;
+    }
+
+    /* Force RTL on inputs unless explicitly LTR */
+    input:not([dir="ltr"]),
+    textarea:not([dir="ltr"]),
+    select:not([dir="ltr"]) {
+        direction: rtl;
+        text-align: right;
+    }
+
+    /* PrimeVue specific RTL fixes */
+    .p-inputtext:not([dir="ltr"]) {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .p-inputnumber-input:not([dir="ltr"]) {
+        direction: rtl;
+        text-align: right;
+    }
+}
