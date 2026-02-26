@@ -79,6 +79,14 @@
                     {{ countdown > 0 ? `إعادة إرسال الرمز خلال ${countdown} ثانية` : 'إعادة إرسال الرمز المقترح' }}
                 </button>
             </div>
+
+            <!-- Cancel Button -->
+            <div class="text-center mt-2">
+                <button type="button" @click="cancel" :disabled="loading"
+                    class="text-sm font-medium text-red-500 hover:text-red-400 focus:outline-none disabled:text-slate-500 transition-colors">
+                    إلغاء والعودة لتسجيل الدخول
+                </button>
+            </div>
         </form>
     </AuthCorePage>
 </template>
@@ -155,6 +163,20 @@ function resendCode() {
             } else {
                 errorMsg.value = result.message || "حدث خطأ أثناء إعادة إرسال الرمز.";
             }
+        })
+        .finally(() => {
+            loading.value = false;
+        });
+}
+
+function cancel() {
+    loading.value = true;
+    errorMsg.value = "";
+    successMsg.value = "";
+
+    authStore.cancel2fa()
+        .then(() => {
+            router.push({ name: 'login' });
         })
         .finally(() => {
             loading.value = false;

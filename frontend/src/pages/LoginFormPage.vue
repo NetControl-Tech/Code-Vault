@@ -136,26 +136,19 @@ function login() {
     loading.value = true
     errorMsg.value = ""
     errors.value = {}
-    debugger
+
     authStore.login(form)
         .then((result) => {
-            debugger
-            if (result.success) {
-                if (result.requires_2fa) {
-                    router.push({ name: '2fa' })
-                } else {
-                    router.push({ name: 'users' })
-                }
+            if (!result.success) {
+                errorMsg.value = result.message || "خطأ في البريد الإلكتروني أو كلمة المرور"
+                errors.value = result.errors || {}
+                return
             }
-            else {
-                errorMsg.value = result.message || "خطأ في البريد الإلكتروني أو كلمة المرور";
-            }
-        })
-        .catch((err) => {
-            debugger
-            errorMsg.value = err.response?.data?.message || "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.";
-            if (err.response?.data?.errors) {
-                errors.value = err.response.data.errors
+
+            if (result.requires_2fa) {
+                router.push({ name: '2fa' })
+            } else {
+                router.push({ name: 'users' })
             }
         })
         .finally(() => {

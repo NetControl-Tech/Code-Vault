@@ -25,11 +25,9 @@ export const useAuthStore = defineStore('auth', () => {
     
         return api.post('/login', credentials)
       .then((response) => {
-        debugger
         if (response.data.requires_2fa) {
              tempToken.value = response.data.data.temp_token
              localStorage.setItem('temp_token', tempToken.value)
-             // We don't set user.value until 2FA is verified, to keep isAuthenticated = true restricted
              loading.value = false
              return { success: true, requires_2fa: true }
         }
@@ -129,6 +127,24 @@ export const useAuthStore = defineStore('auth', () => {
       })
     }
 
+    function cancel2fa() {
+        loading.value = true
+        error.value = null
+
+        return api.post('/cancel-2fa')
+      .then((response) => {
+        clearAuth()
+        loading.value = false
+        return { success: true }
+      })
+      .catch((err) => {
+        error.value = err.response?.data?.message || 'حدث خطأ أثناء إلغاء العملية'
+        clearAuth()
+        loading.value = false
+        return { success: false, message: error.value }
+      })
+    }
+
     return {
     user,
     token,
@@ -144,6 +160,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     verify2fa,
     resend2fa,
+    cancel2fa,
     logout,
     fetchUser,
     clearAuth

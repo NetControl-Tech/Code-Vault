@@ -54,8 +54,7 @@ class AuthController extends Controller
         Mail::to($user)->send(new TwoFactorCodeMail($code));
 
         // Create temporary token for 2FA validation
-        $token = $user->createToken('2fa-token', ['2fa'], now()->addHours(24))->plainTextToken;
-
+        $token = $user->createToken('2fa-token', ['2fa'], now()->addMinutes(10))->plainTextToken;
         return response()->json([
             'success' => true,
             'message' => 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
@@ -154,6 +153,38 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'تم إرسال رمز التحقق مجدداً إلى بريدك الإلكتروني',
+        ]);
+    }
+
+    /**
+     * Cancel 2FA process.
+     */
+    public function cancel2FA(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user->currentAccessToken()->can('2fa')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid token type',
+            ], 403);
+        }
+
+        // Clear 2FA fields
+        $user->two_factor_code = null;
+        $user->two_factor_expires_at = null;
+        $user->save();
+
+        // Delete temporary token
+        /** @var \Laravel\Sanctum\PersonalAccessToken $currentToken */
+        $currentToken = $user->currentAccessToken();
+        if ($currentToken) {
+            $currentToken->delete();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => '2FA cancelled successfully',
         ]);
     }
 

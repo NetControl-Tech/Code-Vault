@@ -13,6 +13,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth routes
     Route::post('/verify-2fa', [AuthController::class, 'verify2FA'])->name('auth.verify-2fa');
     Route::post('/resend-2fa', [AuthController::class, 'resend2FA'])->middleware('throttle:1,1')->name('auth.resend-2fa');
+    Route::post('/cancel-2fa', [AuthController::class, 'cancel2FA'])->name('auth.cancel-2fa');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
