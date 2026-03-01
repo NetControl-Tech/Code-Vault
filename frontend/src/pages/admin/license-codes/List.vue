@@ -41,8 +41,8 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">بحث</label>
-                    <input v-model="filters.search" type="text" class="input"
-                        placeholder="الرقم التسلسلي، العنوان..." />
+                    <InputNumber v-model="filters.search" class="w-full" :useGrouping="false"
+                        placeholder="ابحث بالرقم التسلسلي..." />
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">الحالة</label>
@@ -153,10 +153,10 @@
                     </p>
                     <div class="flex gap-2">
                         <button @click="prevPage" :disabled="licenseCodesStore.meta.current_page === 1"
-                            class="btn btn-secondary text-sm px-3 py-1">السابق</button>
+                            class="px-4 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700 transition-colors">السابق</button>
                         <button @click="nextPage"
                             :disabled="licenseCodesStore.meta.current_page === licenseCodesStore.meta.last_page"
-                            class="btn btn-secondary text-sm px-3 py-1">التالي</button>
+                            class="px-4 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-800 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-700 transition-colors">التالي</button>
                     </div>
                 </div>
             </div>

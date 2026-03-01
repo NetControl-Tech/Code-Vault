@@ -23,10 +23,7 @@ class AdminLicenseCodeController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('serial', 'like', "%{$search}%")
-                    ->orWhere('pin_hash', 'like', "%{$search}%");
-            });
+            $query->where('serial', 'like', "%{$search}%");
         }
 
         if ($request->filled('status')) {
