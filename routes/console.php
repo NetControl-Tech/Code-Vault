@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('letters:update-late-status')->daily();
+Schedule::command('license-codes:deactivate-expired')->dailyAt('00:10');

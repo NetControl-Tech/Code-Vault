@@ -69,6 +69,13 @@ const routes = [
         component: () => import('../pages/RBAC/Permissions.vue'),
         meta: { requiresAdmin: true, title: 'إدارة الصلاحيات' }
       },
+      // License Codes
+      {
+        path: 'license-codes',
+        name: 'license-codes',
+        component: () => import('../pages/admin/license-codes/List.vue'),
+        meta: { requiresAdmin: true, title: 'إدارة أكواد التفعيل' }
+      },
     ]
   },
   {
@@ -85,8 +92,7 @@ const router = createRouter({
 // Navigation guards
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
-  // Wait if store is still loading (optional, but good for refresh)
+  await authStore.fetchUser()
   const isAuthenticated = authStore.isAuthenticated
   const isAdmin = authStore.isAdmin
 

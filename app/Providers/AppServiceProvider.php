@@ -2,14 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Assignment;
-use App\Models\Category;
-use App\Models\Letter;
-use App\Models\Subject;
-use App\Policies\AssignmentPolicy;
-use App\Policies\CategoryPolicy;
-use App\Policies\LetterPolicy;
-use App\Policies\SubjectPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 

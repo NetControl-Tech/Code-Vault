@@ -1,0 +1,8 @@
+PHPUnit 11.5.48 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.2.4
+Configuration: D:\All Project\RealProject\CodeVault\phpunit.xml
+
+"CODE IS NULL" // app\Http\Controllers\Api\RedeemController.php:42
+1 // app\Http\Controllers\Api\RedeemController.php:42
+"$2y$04$M.FvXxuaYDjfTIHO.RG8j.uU116fvqHLO37vwmf2OyC.tq6pEPIF." // app\Http\Controllers\Api\RedeemController.php:42

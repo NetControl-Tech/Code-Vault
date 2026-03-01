@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Requests\RoleRequest;
+use App\Http\Requests\Admin\RoleRequest;
 use App\Http\Resources\RoleResource;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 
@@ -76,17 +77,29 @@ class RoleController extends Controller
     public function destroy($id)
     {
         try {
-            $role = Role::findOrFail($id);
+            $role = DB::table('roles')->where('id', $id)->first();
 
-            // التحقق من أن الدور ليس "Super Admin" (غالباً ما يكون المعرف 1)
-            if ($role->name === 'Super Admin' || $role->id == 1) {
+            if (!$role) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الدور غير موجود',
+                ], 404);
+            }
+
+            if ($role->name === 'super-admin' || $role->id == 1) {
                 return response()->json([
                     'success' => false,
                     'message' => 'لا يمكن حذف الدور الأساسي (Super Admin)',
                 ], 403);
             }
-            
-            $role->delete();
+
+            // Delete pivot relations
+            DB::table('model_has_roles')->where('role_id', $id)->delete();
+            DB::table('role_has_permissions')->where('role_id', $id)->delete();
+            DB::table('roles')->where('id', $id)->delete();
+
+            // Clear Spatie permission cache
+            app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
             return response()->json([
                 'success' => true,

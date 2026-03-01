@@ -1,0 +1,20 @@
+PHPUnit 11.5.48 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.2.4
+Configuration: D:\All Project\RealProject\CodeVault\phpunit.xml
+
+.F
+
+Time: 00:00.289, Memory: 44.00 MB
+
+There was 1 failure:
+
+1) Tests\Feature\AdminLicenseCodeTest::test_generate_codes_creates_db_rows_and_returns_csv
+Failed asserting that table [license_codes] matches expected entries count of 10. Entries found: 0.
+.
+
+D:\All Project\RealProject\CodeVault\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase.php:94
+D:\All Project\RealProject\CodeVault\tests\Feature\AdminLicenseCodeTest.php:30
+
+FAILURES!
+Tests: 2, Assertions: 5, Failures: 1.

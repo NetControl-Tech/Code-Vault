@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
+use App\Http\Requests\Admin\LoginRequest;
 use App\Http\Resources\UserResource;
-use App\Mail\TwoFactorCodeMail;
 use App\Models\User;
+use App\Services\TwoFactorAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 
 /**
  * Authentication Controller
@@ -21,18 +21,31 @@ class AuthController extends Controller
     /**
      * Login user and create token.
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request, TwoFactorAuthService $twoFactorService): JsonResponse
     {
+        $throttleKey = $this->generateThrottleKey($request);
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 3)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many login attempts. Please try again in ' . $seconds . ' seconds.',
+            ], 429);
+        }
+
         // Find user
         $user = User::where('email', $request->email)->first();
 
         // Check credentials
         if (!$user || !Auth::attempt($request->only('email', 'password'))) {
+            RateLimiter::hit($throttleKey, 60);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid credentials',
             ], 401);
         }
+
 
         // Check if user is active
         if (!$user->is_active) {
@@ -42,16 +55,9 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Generate 2FA Code
-        $code = (string) random_int(100000, 999999);
+        RateLimiter::clear($throttleKey);
 
-        // Save hashed code and expiration
-        $user->two_factor_code = Hash::make($code);
-        $user->two_factor_expires_at = now()->addMinutes(10);
-        $user->save();
-
-        // Send Email
-        Mail::to($user)->send(new TwoFactorCodeMail($code));
+        $twoFactorService->generateAndSendCode($user);
 
         // Create temporary token for 2FA validation
         $token = $user->createToken('2fa-token', ['2fa'], now()->addMinutes(10))->plainTextToken;
@@ -128,7 +134,7 @@ class AuthController extends Controller
     /**
      * Resend 2FA code.
      */
-    public function resend2FA(Request $request): JsonResponse
+    public function resend2FA(Request $request, TwoFactorAuthService $twoFactorService): JsonResponse
     {
         $user = $request->user();
 
@@ -139,16 +145,7 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Generate new 2FA Code
-        $code = (string) random_int(100000, 999999);
-
-        // Save hashed code and expiration
-        $user->two_factor_code = Hash::make($code);
-        $user->two_factor_expires_at = now()->addMinutes(10);
-        $user->save();
-
-        // Send Email
-        Mail::to($user)->send(new TwoFactorCodeMail($code));
+        $twoFactorService->generateAndSendCode($user);
 
         return response()->json([
             'success' => true,
@@ -212,5 +209,10 @@ class AuthController extends Controller
             'success' => true,
             'data' => new UserResource($user),
         ]);
+    }
+
+    protected function generateThrottleKey(LoginRequest $request): string
+    {
+        return strtolower(trim($request->email)) . '|' . $request->ip();
     }
 }

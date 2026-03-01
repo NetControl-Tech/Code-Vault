@@ -25,6 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
     
         return api.post('/login', credentials)
       .then((response) => {
+        debugger
         if (response.data.requires_2fa) {
              tempToken.value = response.data.data.temp_token
              localStorage.setItem('temp_token', tempToken.value)
@@ -105,16 +106,28 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     function clearAuth() {
-        token.value = null
+        clearToken()
+        clearTempToken()
+        clearUser()
+    }
+    function clearTempToken() {
         tempToken.value = null
-        user.value = null
-        localStorage.removeItem('token')
         localStorage.removeItem('temp_token')
+    }
+    function clearToken() {
+        token.value = null
+        localStorage.removeItem('token')
+    }
+    function clearUser() {
+        user.value = null
         localStorage.removeItem('user')
     }
 
     function fetchUser() {
-        if (!token.value) return Promise.resolve()
+        if (!token.value) {
+          clearUser()
+          return Promise.resolve()
+        }
 
         return api.get('/me')
       .then((response) => {
