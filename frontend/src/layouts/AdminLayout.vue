@@ -5,17 +5,15 @@
             @toggle-dark-mode="toggleDarkMode" @logout="handleLogout" />
 
         <!-- Main Content -->
-        <main :class="[
-            'transition-all duration-300 flex flex-col min-h-screen',
-            sidebarOpen ? 'mr-[280px]' : 'mr-0 md:mr-20'
-        ]">
+        <main class="transition-all duration-300 flex flex-col min-h-screen">
             <!-- Top Header -->
             <header
                 class="sticky top-0 z-30 bg-white/80 dark:bg-dark-800/80 backdrop-blur border-b border-slate-200 dark:border-dark-700">
                 <div class="flex items-center justify-between p-4">
                     <div class="flex items-center gap-4">
-                        <button @click="toggleSidebar"
-                            class="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-700 text-slate-600 dark:text-slate-300">
+                        <button @click="toggleSidebar" :aria-expanded="sidebarOpen" aria-controls="sidebar-drawer"
+                            aria-label="Toggle Sidebar" ref="toggleBtnRef"
+                            class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-700 text-slate-600 dark:text-slate-300">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -35,9 +33,6 @@
                 <RouterView />
             </div>
         </main>
-
-        <!-- Mobile sidebar overlay -->
-        <div v-if="sidebarOpen" @click="toggleSidebar" class="fixed inset-0 bg-black/50 z-30 md:hidden"></div>
     </div>
 </template>
 <script setup>
