@@ -18,6 +18,7 @@ const routes = [
     path: '/',
     component: () => import('../layouts/AdminLayout.vue'),
     meta: { requiresAuth: true },
+    redirect: { name: 'license-codes' },
     children: [
       {
         path: 'users',
@@ -103,7 +104,7 @@ router.beforeEach(async (to, from, next) => {
   // Prevent accessing 2fa page if not requiring verification
   else if (to.name === '2fa' && !authStore.requiresVerification) {
     if (isAuthenticated) {
-      next({ name: 'users' })
+      next({ name: 'license-codes' })
     } else {
       next({ name: 'login' })
     }
@@ -114,7 +115,7 @@ router.beforeEach(async (to, from, next) => {
   } 
   // Check guest access
   else if (to.meta.guest && isAuthenticated) {
-    next({ name: 'users' })
+    next({ name: 'license-codes' })
   }
   // Check admin privileges
   else if (to.meta.requiresAdmin && !isAdmin) {

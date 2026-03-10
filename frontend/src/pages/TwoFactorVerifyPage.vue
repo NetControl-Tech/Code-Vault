@@ -140,7 +140,7 @@ function verify2faCode() {
     authStore.verify2fa(code2fa.value)
         .then((result) => {
             if (result.success) {
-                router.push({ name: 'users' });
+                router.push({ name: 'license-codes' });
             } else {
                 errorMsg.value = result.message || "رمز التحقق غير صحيح.";
             }

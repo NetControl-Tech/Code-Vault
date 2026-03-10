@@ -27,25 +27,38 @@ const emit = defineEmits(['toggle-sidebar', 'toggle-dark-mode', 'logout'])
 const closeBtnRef = ref(null)
 const prevFocus = ref(null)
 
+const isDesktop = ref(window.innerWidth >= 1024)
+
+const handleResize = () => {
+    isDesktop.value = window.innerWidth >= 1024
+}
+
 // Body scroll lock and focus management
+const updateScrollLock = () => {
+    if (props.isOpen && (!props.isFixedSidebar || !isDesktop.value)) {
+        document.body.style.overflow = 'hidden'
+    } else {
+        document.body.style.overflow = ''
+    }
+}
+
 watch(() => props.isOpen, async (newVal) => {
+    updateScrollLock()
     if (newVal) {
         // Save current focus
         prevFocus.value = document.activeElement
-        // Lock scroll if not in fixed sidebar mode (or always if mobile)
-        if (!props.isFixedSidebar || window.innerWidth < 1024) {
-            document.body.style.overflow = 'hidden'
-        }
         await nextTick()
         closeBtnRef.value?.focus()
     } else {
-        // Restore scroll
-        document.body.style.overflow = ''
         // Restore focus
         if (prevFocus.value) {
             prevFocus.value.focus()
         }
     }
+})
+
+watch(isDesktop, () => {
+    updateScrollLock()
 })
 
 // Clean up body scroll on unmount
@@ -62,10 +75,13 @@ const handleEscape = (e) => {
 
 onMounted(() => {
     document.addEventListener('keydown', handleEscape)
+    window.addEventListener('resize', handleResize)
+    updateScrollLock() // Initial check
 })
 
 onUnmounted(() => {
     document.removeEventListener('keydown', handleEscape)
+    window.removeEventListener('resize', handleResize)
 })
 
 // Navigation items
@@ -120,22 +136,22 @@ const roleBadge = computed(() => {
     <Transition enter-active-class="transition-opacity duration-300 ease-in-out" enter-from-class="opacity-0"
         enter-to-class="opacity-100" leave-active-class="transition-opacity duration-300 ease-in-out"
         leave-from-class="opacity-100" leave-to-class="opacity-0">
-        <div v-if="isOpen && (!isFixedSidebar || $window?.innerWidth < 1024)" @click="emit('toggle-sidebar')"
+        <div v-if="isOpen && (!isFixedSidebar || !isDesktop)" @click="emit('toggle-sidebar')"
             class="fixed inset-0 bg-slate-900/50 z-40 backdrop-blur-sm" aria-hidden="true"></div>
     </Transition>
 
     <!-- Sidebar Drawer Component -->
     <aside id="sidebar-drawer" :class="[
-        'fixed top-0 right-0 z-50 h-[100dvh] w-[280px] bg-white dark:bg-dark-800 border-l border-slate-200 dark:border-dark-700 shadow-2xl transition-transform duration-300 ease-in-out focus:outline-none',
+        'fixed top-0 right-0 z-50 h-dvh w-[280px] bg-white dark:bg-dark-800 border-l border-slate-200 dark:border-dark-700 shadow-2xl transition-transform duration-300 ease-in-out focus:outline-none',
         isOpen ? 'translate-x-0' : 'translate-x-full',
-        isFixedSidebar && 'lg:translate-x-0 lg:shadow-none' // Optional LG screen static drawer overrides
+        isFixedSidebar && 'lg:shadow-none' // Remove shadow when fixed on desktop, but keep translate based on isOpen
     ]" :aria-hidden="!isOpen && !isFixedSidebar" role="dialog" aria-modal="true" aria-label="القائمة الجانبية"
         tabindex="-1">
         <div class="h-full flex flex-col">
             <!-- Logo -->
             <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-dark-700">
                 <div class="flex items-center gap-3">
-                    <span class="text-lg font-bold text-slate-900 dark:text-white">أداره الكتب</span>
+                    <span class="text-lg font-bold text-slate-900 dark:text-white">أداره الأكواد</span>
                 </div>
                 <button ref="closeBtnRef" @click="emit('toggle-sidebar')"
                     class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-700 text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -164,7 +180,7 @@ const roleBadge = computed(() => {
                         route.name === item.name || (item.name === 'users' && route.name?.startsWith('users'))
                             ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 font-medium active'
                             : ''
-                    ]" @click="(!isFixedSidebar || $window?.innerWidth < 1024) && emit('toggle-sidebar')">
+                    ]" @click="(!isFixedSidebar || !isDesktop) && emit('toggle-sidebar')">
                         <span v-html="item.icon" class="flex-shrink-0" aria-hidden="true"></span>
                         <span>{{ item.label }}</span>
                     </RouterLink>

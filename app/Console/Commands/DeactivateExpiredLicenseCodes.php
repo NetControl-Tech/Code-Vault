@@ -27,11 +27,23 @@ class DeactivateExpiredLicenseCodes extends Command
      */
     public function handle()
     {
-        $updatedCount = LicenseCode::where('status', LicenseCodeStatus::Active->value)
-            ->where('expires_at', '<=', now())
-            ->update(['status' => LicenseCodeStatus::Inactive->value]);
+        $query = LicenseCode::with('device')
+            ->where('status', LicenseCodeStatus::Active->value)
+            ->where('expires_at', '<=', now());
 
-        $this->info("Successfully deactivated {$updatedCount} expired license codes.");
-        logger()->info("DeactivateExpiredLicenseCodes: Deactivated {$updatedCount} expired license codes.");
+        $updatedCount = $query->count();
+
+        $query->chunkById(100, function ($licenses) {
+            foreach ($licenses as $license) {
+                /** @var \App\Models\LicenseCode $license */
+                if ($license->device) {
+                    $license->device->tokens()->delete();
+                }
+                $license->update(['status' => LicenseCodeStatus::Inactive->value]);
+            }
+        });
+
+        $this->info("Successfully deactivated {$updatedCount} expired license codes and revoked their devices.");
+        logger()->info("DeactivateExpiredLicenseCodes: Deactivated {$updatedCount} expired license codes and revoked their devices.");
     }
 }

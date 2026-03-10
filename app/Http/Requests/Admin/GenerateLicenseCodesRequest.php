@@ -22,7 +22,8 @@ class GenerateLicenseCodesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'count' => ['required', 'integer', 'min:1', 'max:10000'],
+            'count' => ['required', 'integer', 'min:1',],
+            'duration_days' => ['nullable', 'integer', 'min:1'],
         ];
     }
 }

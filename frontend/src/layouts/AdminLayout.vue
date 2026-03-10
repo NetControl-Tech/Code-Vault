@@ -44,7 +44,7 @@ import Sidebar from '../components/core/Sidebar.vue'
 const authStore = useAuthStore()
 const route = useRoute()
 
-const sidebarOpen = ref(true)
+const sidebarOpen = ref(false)
 const darkMode = ref(document.documentElement.classList.contains('dark'))
 
 function toggleDarkMode() {

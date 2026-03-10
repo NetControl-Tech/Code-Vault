@@ -41,7 +41,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">بحث</label>
-                    <InputNumber v-model="filters.search" class="w-full" :useGrouping="false"
+                    <InputText v-model="filters.search" class="w-full" :useGrouping="false"
                         placeholder="ابحث بالرقم التسلسلي..." />
                 </div>
                 <div>
@@ -193,8 +193,14 @@
                         <div>
                             <label
                                 class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">العدد</label>
-                            <InputNumber v-model="generateForm.count" :min="1" :max="10000" class="w-full"
+                            <InputText v-model="generateForm.count" :min="1" :max="10000" class="w-full"
                                 :disabled="generateLoading" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">مدة الترخيص
+                                (بالأيام)</label>
+                            <InputText v-model="generateForm.duration_days" :min="1" class="w-full"
+                                :disabled="generateLoading" placeholder="30" />
                         </div>
                     </div>
                     <div class="flex gap-3 justify-end">
@@ -233,13 +239,13 @@
                         <div>
                             <label class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">من الرقم
                                 التسلسلي (Serial)</label>
-                            <InputNumber v-model="activateForm.from_serial" :min="1" class="w-full"
+                            <InputText v-model="activateForm.from_serial" :min="1" class="w-full"
                                 :disabled="activateLoading" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">إلى الرقم
                                 التسلسلي (Serial)</label>
-                            <InputNumber v-model="activateForm.to_serial" :min="1" class="w-full"
+                            <InputText v-model="activateForm.to_serial" :min="1" class="w-full"
                                 :disabled="activateLoading" />
                         </div>
                     </div>
@@ -282,13 +288,13 @@
                         <div>
                             <label class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">من الرقم
                                 التسلسلي (Serial)</label>
-                            <InputNumber v-model="deleteForm.from_serial" :min="1" class="w-full"
+                            <InputText v-model="deleteForm.from_serial" :min="1" class="w-full"
                                 :disabled="deleteLoading" />
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">إلى الرقم
                                 التسلسلي (Serial)</label>
-                            <InputNumber v-model="deleteForm.to_serial" :min="1" class="w-full"
+                            <InputText v-model="deleteForm.to_serial" :min="1" class="w-full"
                                 :disabled="deleteLoading" />
                         </div>
                     </div>
@@ -317,9 +323,9 @@ import { ref, onMounted } from 'vue'
 import { useLicenseCodesStore } from '../../../stores/licenseCodes'
 import { useToast } from 'primevue/usetoast'
 import Select from 'primevue/select'
-import InputNumber from 'primevue/inputnumber'
 import Toast from 'primevue/toast'
 import AppSpinner from '../../../components/core/AppSpinner.vue'
+import InputText from 'primevue/inputtext'
 
 const licenseCodesStore = useLicenseCodesStore()
 const toast = useToast()
@@ -340,7 +346,7 @@ const activateLoading = ref(false)
 const deleteLoading = ref(false)
 const revokingDeviceId = ref(null)
 
-const generateForm = ref({ count: 100 })
+const generateForm = ref({ count: 100, duration_days: 30 })
 const activateForm = ref({ from_serial: null, to_serial: null })
 const deleteForm = ref({ from_serial: null, to_serial: null })
 
@@ -380,7 +386,7 @@ function exportData() {
 }
 
 function openGenerateModal() {
-    generateForm.value.count = 100
+    generateForm.value = { count: 100, duration_days: 30 }
     showGenerateModal.value = true
 }
 

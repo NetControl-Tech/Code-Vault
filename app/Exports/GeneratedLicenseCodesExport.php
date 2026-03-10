@@ -24,6 +24,7 @@ class GeneratedLicenseCodesExport implements FromArray, WithHeadings
         return [
             'Serial',
             'PIN',
+            'Duration (Days)',
         ];
     }
 }

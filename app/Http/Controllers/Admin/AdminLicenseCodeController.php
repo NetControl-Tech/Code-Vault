@@ -76,7 +76,7 @@ class AdminLicenseCodeController extends Controller
     {
         $count = (int) $request->validated('count');
 
-        $duration = 30;
+        $duration = (int) $request->input('duration_days', 30);
 
         $maxSerial = LicenseCode::max('serial');
         $startingSerial = ($maxSerial ?? 9999) + 1;
@@ -98,7 +98,7 @@ class AdminLicenseCodeController extends Controller
                 'updated_at' => now(),
             ];
 
-            $exportData[] = [$serial, $pin];
+            $exportData[] = [$serial, $pin, $duration];
         }
 
         foreach (array_chunk($insertData, 1000) as $chunk) {

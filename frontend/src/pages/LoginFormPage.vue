@@ -148,7 +148,7 @@ function login() {
             if (result.requires_2fa) {
                 router.push({ name: '2fa' })
             } else {
-                router.push({ name: 'users' })
+                router.push({ name: 'license-codes' })
             }
         })
         .finally(() => {
