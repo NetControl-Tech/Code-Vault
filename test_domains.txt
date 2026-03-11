@@ -1,0 +1,10 @@
+facebook.com
+twitter.com
+instagram.com
+
+# invalid lines and comments usually get skipped if they don't match the regex
+not-a-valid-domain
+http://with-protocol.com
+facebook.com
+tiktok.com
+snapchat.com

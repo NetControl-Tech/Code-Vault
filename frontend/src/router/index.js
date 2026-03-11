@@ -77,6 +77,20 @@ const routes = [
         component: () => import('../pages/admin/license-codes/List.vue'),
         meta: { requiresAdmin: true, title: 'إدارة أكواد التفعيل' }
       },
+      // Blocklists Manager
+      {
+        path: 'blocklists-manager',
+        name: 'blocklists-manager',
+        component: () => import('../pages/admin/blocklists/BlocklistsManager.vue'),
+        meta: { requiresAdmin: true, title: 'إدارة القوائم والدروع' }
+      },
+      // User Reports
+      {
+        path: 'user-reports',
+        name: 'user-reports',
+        component: () => import('../pages/admin/reports/UserReports.vue'),
+        meta: { requiresAdmin: true, title: 'مراجعة اقتراحات المستخدمين' }
+      },
     ]
   },
   {

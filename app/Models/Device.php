@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Auth\Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
-class Device extends Model
+class Device extends Model implements AuthenticatableContract
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, Authenticatable;
 
     /**
      * The attributes that are mass assignable.

@@ -10,6 +10,8 @@ import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
 import ToastService from 'primevue/toastservice';
 import Tooltip from 'primevue/tooltip';
+import ConfirmationService from 'primevue/confirmationservice'
+import ConfirmDialog from 'primevue/confirmdialog'
 
 app.use(createPinia())
 app.use(router)
@@ -28,6 +30,7 @@ app.directive('tooltip', Tooltip);
 if (localStorage.getItem('darkMode') === 'true' || 
     (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
   document.documentElement.classList.add('dark')
-}
+}app.use(ConfirmationService)
 
+app.component('ConfirmDialog', ConfirmDialog)
 app.mount('#app')

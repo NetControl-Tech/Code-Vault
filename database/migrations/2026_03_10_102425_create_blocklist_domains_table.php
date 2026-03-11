@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('devices', function (Blueprint $table) {
+        Schema::create('blocklist_domains', function (Blueprint $table) {
             $table->id();
-            $table->string('device_id')->unique();
-            $table->boolean('is_active')->default(true)->index();
+            $table->string('domain');
+            $table->string('category')->index();
             $table->timestamps();
+
+            $table->unique(['domain', 'category']);
         });
     }
 
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('devices');
+        Schema::dropIfExists('blocklist_domains');
     }
 };

@@ -11,12 +11,19 @@ use App\Exports\GeneratedLicenseCodesExport;
 use App\Exports\LicenseCodesExport;
 use App\Enums\LicenseCodeStatus;
 use App\Models\LicenseCode;
+use App\Services\LicenseCodeRenewalService;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
 class AdminLicenseCodeController extends Controller
 {
+    protected LicenseCodeRenewalService $renewalService;
+
+    public function __construct(LicenseCodeRenewalService $renewalService)
+    {
+        $this->renewalService = $renewalService;
+    }
     public function index(Request $request)
     {
         $query = LicenseCode::with('device:id,device_id');
@@ -143,10 +150,7 @@ class AdminLicenseCodeController extends Controller
 
     public function renew(RenewLicenseCodeRequest $request, string $code)
     {
-        $validated = $request->validated();
-
-        $service = new \App\Services\LicenseCodeRenewalService();
-        $result = $service->renew($code, $validated['duration_days']);
+        $result = $this->renewalService->renew($code, $request->validated('duration_days'));
 
         if ($result['status'] === 'error') {
             return response()->json([

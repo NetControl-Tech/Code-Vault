@@ -25,7 +25,6 @@ export const useAuthStore = defineStore('auth', () => {
     
         return api.post('/login', credentials)
       .then((response) => {
-        debugger
         if (response.data.requires_2fa) {
              tempToken.value = response.data.data.temp_token
              localStorage.setItem('temp_token', tempToken.value)

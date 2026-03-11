@@ -22,7 +22,7 @@ class RedeemLicenseCodeTest extends TestCase
             'duration_days' => 30,
         ]);
 
-        $response = $this->postJson(route('api.redeem'), [
+        $response = $this->postJson('/api/v1/device/activate', [
             'pin_code' => $pin,
             'device_id' => 'DEVICE_A_123456789'
         ]);
@@ -61,7 +61,7 @@ class RedeemLicenseCodeTest extends TestCase
             'expires_at' => now()->addDays(30),
         ]);
 
-        $response = $this->postJson(route('api.redeem'), [
+        $response = $this->postJson('/api/v1/device/activate', [
             'pin_code' => $pin,
             'device_id' => 'DEVICE_A_123456789'
         ]);
@@ -87,30 +87,30 @@ class RedeemLicenseCodeTest extends TestCase
             'device_id' => $device->id,
         ]);
 
-        $response = $this->postJson(route('api.redeem'), [
+        $response = $this->postJson('/api/v1/device/activate', [
             'pin_code' => $pin,
             'device_id' => 'DEVICE_B_987654321'
         ]);
 
         $response->assertStatus(403);
-        $response->assertJsonPath('message', 'Device Mismatch');
+        $response->assertJsonPath('message', 'Code Already Redeemed');
     }
 
     public function test_brute_force_rate_limits_requests()
     {
-        RateLimiter::clear('redeem_ip:127.0.0.1');
-        RateLimiter::clear('redeem_device:DEVICE_TEST_123');
+        RateLimiter::clear('activate_ip:127.0.0.1');
+        RateLimiter::clear('activate_device:DEVICE_TEST_123');
 
         // Hit 3 times (the max is 3)
         for ($i = 0; $i < 3; $i++) {
-            $this->postJson(route('api.redeem'), [
+            $this->postJson('/api/v1/device/activate', [
                 'pin_code' => 'INVALIDPIN12',
                 'device_id' => 'DEVICE_TEST_123'
             ])->assertStatus(400); // Because code doesn't exist, we get 400
         }
 
         // 4th time should be blocked
-        $response = $this->postJson(route('api.redeem'), [
+        $response = $this->postJson('/api/v1/device/activate', [
             'pin_code' => 'INVALIDPIN12',
             'device_id' => 'DEVICE_TEST_123'
         ]);
@@ -121,7 +121,7 @@ class RedeemLicenseCodeTest extends TestCase
 
     public function test_invalid_pin_format()
     {
-        $response = $this->postJson(route('api.redeem'), [
+        $response = $this->postJson('/api/v1/device/activate', [
             'pin_code' => 'SHORT', // Less than 12
             'device_id' => 'DEVICE_TEST_123'
         ]);

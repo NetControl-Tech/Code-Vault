@@ -1,0 +1,7 @@
+domain,notes,other_info
+ads.example.com,Known Ad Server,
+tracking.example.com,Tracker,
+invalid_domain_format,Should be skipped,
+ads.example.com,Duplicate domain,
+malicious-site.net,,
+another-ad-network.co.uk,,
