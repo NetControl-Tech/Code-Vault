@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Device;
 use App\Models\LicenseCode;
+use App\Models\Subscription;
 use App\Enums\LicenseCodeStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -171,29 +172,56 @@ class DeviceService
     /**
      * Resolve the current subscription state for a device_id, across all sources.
      *
-     * Unknown device, no subscription, and expired all collapse to inactive — the
-     * caller never errors on this lookup (the mobile app polls it after purchase).
-     *
-     * TODO(IAP): when the `subscriptions` table is added for Google Play IAP, this
-     * becomes the single place to read the latest active subscription across both
-     * manual codes and IAP. For now it reads the device's linked LicenseCode.
+     * Reads both manual license codes and Google Play IAP subscriptions (ingested
+     * via RTDN) and returns the furthest valid expiry across the two. Unknown
+     * device, no subscription, and expired all collapse to inactive — the caller
+     * never errors on this lookup (the mobile app polls it after purchase).
      *
      * @return array{is_active: bool, expires_at: ?\Illuminate\Support\Carbon}
      */
     public function getSubscriptionInfo(string $deviceId): array
     {
-        $device = Device::where('device_id', $deviceId)->first();
-        $licenseCode = $device?->licenseCode;
+        $licenseExpiry = $this->activeLicenseExpiry($deviceId);
+        $iapExpiry = $this->activeIapExpiry($deviceId);
+
+        // Furthest valid expiry across both sources.
+        $expiresAt = collect([$licenseExpiry, $iapExpiry])
+            ->filter()
+            ->max();
+
+        return [
+            'is_active' => (bool) $expiresAt,
+            'expires_at' => $expiresAt,
+        ];
+    }
+
+    /**
+     * Expiry of the device's redeemed, unexpired license code, or null.
+     */
+    private function activeLicenseExpiry(string $deviceId): ?\Illuminate\Support\Carbon
+    {
+        $licenseCode = Device::where('device_id', $deviceId)->first()?->licenseCode;
 
         $isActive = $licenseCode
             && $licenseCode->status === LicenseCodeStatus::Redeemed
             && $licenseCode->expires_at
             && now()->lessThanOrEqualTo($licenseCode->expires_at);
 
-        return [
-            'is_active' => (bool) $isActive,
-            'expires_at' => $isActive ? $licenseCode->expires_at : null,
-        ];
+        return $isActive ? $licenseCode->expires_at : null;
+    }
+
+    /**
+     * Furthest expiry of the device's active Google Play IAP subscriptions, or null.
+     */
+    private function activeIapExpiry(string $deviceId): ?\Illuminate\Support\Carbon
+    {
+        $expiry = Subscription::where('device_id', $deviceId)
+            ->where('status', 'active')
+            ->where('expires_at', '>=', now())
+            ->max('expires_at');
+
+        // max() returns the raw DB value (string); normalize to Carbon.
+        return $expiry ? \Illuminate\Support\Carbon::parse($expiry) : null;
     }
 
     // ──────────────────────────────────────────────

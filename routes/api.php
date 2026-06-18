@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\AdminLicenseCodeController;
 
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\GooglePlayRtdnController;
 use App\Http\Controllers\Api\V1\BlocklistController;
 use App\Http\Controllers\Api\V1\ToolsController;
 use App\Http\Controllers\Api\V1\ManagedAppController;
@@ -27,6 +28,10 @@ Route::controller(AuthController::class)->group(function () {
 // Public Device Routes
 Route::post('device/activate', [DeviceController::class, 'activate']);
 Route::post('subscription-activate', [DeviceController::class, 'subscriptionActivate']);
+
+// Google Play RTDN webhook (server-to-server from Pub/Sub; shared-secret auth)
+Route::post('webhooks/google-play/rtdn', [GooglePlayRtdnController::class, 'handle'])
+    ->middleware('rtdn');
 
 // =============================================
 // Authenticated Routes (Sanctum)
