@@ -78,6 +78,12 @@ class DeviceController extends Controller
     //  Device Auth (NetControl V1)
     // ──────────────────────────────────────────────
 
+    /** Activation throttle: max attempts per IP and per device before a 429. */
+    private const ACTIVATE_MAX_ATTEMPTS = 3;
+
+    /** Activation throttle window, in seconds (15 minutes). */
+    private const ACTIVATE_DECAY_SECS = 15 * 60;
+
     /**
      * Activate a device using a license PIN code.
      * Rate limited: 3 attempts / 15 min per IP and device.
@@ -85,17 +91,10 @@ class DeviceController extends Controller
     public function activate(ActivateDeviceRequest $request)
     {
         $validated = $request->validated();
-        $ip = $request->ip();
         $deviceId = $validated['device_id'];
 
-        $ipKey = 'activate_ip:' . $ip;
-        $deviceKey = 'activate_device:' . $deviceId;
-        $maxAttempts = 3;
-        $decaySecs = 15 * 60; // 15 minutes
-
-        // Prevent brute force
-        if (RateLimiter::tooManyAttempts($ipKey, $maxAttempts) || RateLimiter::tooManyAttempts($deviceKey, $maxAttempts)) {
-            Log::warning('Brute force activate blocked', ['ip' => $ip, 'device_id' => $deviceId]);
+        if ($this->activationThrottled($request, $deviceId)) {
+            Log::warning('Brute force activate blocked', ['ip' => $request->ip(), 'device_id' => $deviceId]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Too many attempts. Please try again later.'
@@ -103,14 +102,7 @@ class DeviceController extends Controller
         }
 
         $result = $this->deviceService->activate($validated['pin_code'], $deviceId);
-
-        if ($result['status'] === 'error') {
-            RateLimiter::hit($ipKey, $decaySecs);
-            RateLimiter::hit($deviceKey, $decaySecs);
-        } else {
-            RateLimiter::clear($ipKey);
-            RateLimiter::clear($deviceKey);
-        }
+        $this->recordActivationAttempt($request, $deviceId, $result['status'] === 'success');
 
         return response()->json($result, $result['code'] ?? 400);
     }
@@ -118,16 +110,10 @@ class DeviceController extends Controller
     public function subscriptionActivate(SubscriptionActivateRequest $request)
     {
         $validated = $request->validated();
-        $ip = $request->ip();
         $deviceId = $validated['device_id'];
 
-        $ipKey = 'activate_ip:' . $ip;
-        $deviceKey = 'activate_device:' . $deviceId;
-        $maxAttempts = 3;
-        $decaySecs = 15 * 60; // 15 minutes
-
-        if (RateLimiter::tooManyAttempts($ipKey, $maxAttempts) || RateLimiter::tooManyAttempts($deviceKey, $maxAttempts)) {
-            Log::warning('Brute force subscription-activate blocked', ['ip' => $ip, 'device_id' => $deviceId]);
+        if ($this->activationThrottled($request, $deviceId)) {
+            Log::warning('Brute force subscription-activate blocked', ['ip' => $request->ip(), 'device_id' => $deviceId]);
             return response()->json([
                 'status' => false,
                 'message' => 'Too many attempts. Please try again later.',
@@ -135,20 +121,16 @@ class DeviceController extends Controller
         }
 
         $result = $this->deviceService->activate($validated['code'], $deviceId);
+        $succeeded = $result['status'] === 'success';
+        $this->recordActivationAttempt($request, $deviceId, $succeeded);
 
-        if ($result['status'] === 'success') {
-            RateLimiter::clear($ipKey);
-            RateLimiter::clear($deviceKey);
-
+        if ($succeeded) {
             return response()->json([
                 'status' => true,
                 'message' => 'Subscription activated successfully',
                 'expiry_date' => optional($result['expires_at'])?->utc()->format('Y-m-d\TH:i:s\Z'),
             ], 200);
         }
-
-        RateLimiter::hit($ipKey, $decaySecs);
-        RateLimiter::hit($deviceKey, $decaySecs);
 
         // Collapse the service's varied error messages into the spec's two messages.
         $alreadyActive = ($result['message'] ?? '') === 'Device already has a linked license code.';
@@ -159,6 +141,49 @@ class DeviceController extends Controller
                 ? 'This device already has an active subscription'
                 : 'Invalid or already used code',
         ], $result['code'] ?? 400);
+    }
+
+    /**
+     * Whether the IP or device has exceeded the activation attempt limit.
+     */
+    private function activationThrottled(Request $request, string $deviceId): bool
+    {
+        [$ipKey, $deviceKey] = $this->activationLimiterKeys($request, $deviceId);
+
+        return RateLimiter::tooManyAttempts($ipKey, self::ACTIVATE_MAX_ATTEMPTS)
+            || RateLimiter::tooManyAttempts($deviceKey, self::ACTIVATE_MAX_ATTEMPTS);
+    }
+
+    /**
+     * Record the outcome of an activation attempt: clear the throttle on
+     * success, otherwise count it against the IP and device limits.
+     */
+    private function recordActivationAttempt(Request $request, string $deviceId, bool $succeeded): void
+    {
+        [$ipKey, $deviceKey] = $this->activationLimiterKeys($request, $deviceId);
+
+        if ($succeeded) {
+            RateLimiter::clear($ipKey);
+            RateLimiter::clear($deviceKey);
+            return;
+        }
+
+        RateLimiter::hit($ipKey, self::ACTIVATE_DECAY_SECS);
+        RateLimiter::hit($deviceKey, self::ACTIVATE_DECAY_SECS);
+    }
+
+    /**
+     * Build the per-IP and per-device rate-limiter keys for activation.
+     * Shared across activate() and subscriptionActivate() by design.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function activationLimiterKeys(Request $request, string $deviceId): array
+    {
+        return [
+            'activate_ip:' . $request->ip(),
+            'activate_device:' . $deviceId,
+        ];
     }
 
     /**
