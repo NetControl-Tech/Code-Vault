@@ -14,6 +14,7 @@ use App\Models\LicenseCode;
 use App\Services\LicenseCodeRenewalService;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminLicenseCodeController extends Controller
@@ -145,6 +146,36 @@ class AdminLicenseCodeController extends Controller
             'status' => 'success',
             'message' => 'تم تفعيل ' . $updatedCount . ' كود بنجاح',
             'activated_count' => $updatedCount
+        ]);
+    }
+
+    public function toggleStatus(LicenseCode $code): JsonResponse
+    {
+        // Only active <-> inactive may be toggled; redeemed codes are in use.
+        if ($code->status === LicenseCodeStatus::Redeemed) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'لا يمكن تغيير حالة كود مستخدم',
+            ], 422);
+        }
+
+        if ($code->status === LicenseCodeStatus::Active) {
+            $code->status = LicenseCodeStatus::Inactive;
+            $code->activated_at = null;
+        } else {
+            $code->status = LicenseCodeStatus::Active;
+            $code->activated_at = now();
+        }
+
+        $code->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $code->status === LicenseCodeStatus::Active ? 'تم تفعيل الكود' : 'تم إلغاء تفعيل الكود',
+            'data' => [
+                'id' => $code->id,
+                'status' => $code->status->value,
+            ],
         ]);
     }
 

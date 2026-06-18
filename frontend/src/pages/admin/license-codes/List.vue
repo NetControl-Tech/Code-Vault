@@ -59,7 +59,7 @@
                         بحث
                     </button>
                     <button @click="clearFilters" class="btn btn-secondary flex-1">مسح</button>
-                    <button @click="exportData" class="btn bg-green-600 text-white hover:bg-green-700 flex-1">
+                    <button @click="exportData" class="btn bg-green-600 text-white hover:bg-green-700 flex">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -117,26 +117,57 @@
                                 </span>
                             </td>
                             <td>
-                                <button v-if="code.status === 'redeemed' && code.device_id"
-                                    @click="handleRevokeToken(code)"
-                                    class="btn text-xs px-3 py-1.5 bg-red-600 text-white hover:bg-red-700 rounded-lg"
-                                    :disabled="revokingDeviceId === code.device_id" v-tooltip.top="'إلغاء توكن الجهاز'">
-                                    <svg v-if="revokingDeviceId !== code.device_id" xmlns="http://www.w3.org/2000/svg"
-                                        class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                    </svg>
-                                    <svg v-else class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg"
-                                        fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-width="4" />
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                    </svg>
-                                    {{ revokingDeviceId === code.device_id ? 'جاري...' : 'إلغاء التوكن' }}
-                                </button>
-                                <span v-else class="text-slate-400 text-sm">-</span>
+                                <div class="flex items-center gap-2">
+                                    <!-- Toggle active <-> inactive (hidden for redeemed codes) -->
+                                    <button v-if="code.status !== 'redeemed'" @click="handleToggleStatus(code)"
+                                        class="btn text-xs px-3 py-1.5 text-white rounded-lg min-w-28 justify-center"
+                                        :class="code.status === 'active' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'"
+                                        :disabled="togglingId === code.id"
+                                        v-tooltip.top="code.status === 'active' ? 'إلغاء تفعيل الكود' : 'تفعيل الكود'">
+                                        <svg v-if="togglingId === code.id" class="animate-spin h-3.5 w-3.5"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4" />
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                        <svg v-else-if="code.status === 'active'" xmlns="http://www.w3.org/2000/svg"
+                                            class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                            stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M18.364 5.636a9 9 0 010 12.728m0 0l-12.728-12.728" />
+                                        </svg>
+                                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        {{ togglingId === code.id ? 'جاري...' : (code.status === 'active' ? 'إلغاء التفعيل' : 'تفعيل') }}
+                                    </button>
+                                    <!-- Revoke device token (only for redeemed codes bound to a device) -->
+                                    <button v-if="code.status === 'redeemed' && code.device_id"
+                                        @click="handleRevokeToken(code)"
+                                        class="btn text-xs px-3 py-1.5 bg-red-600 text-white hover:bg-red-700 rounded-lg"
+                                        :disabled="revokingDeviceId === code.device_id"
+                                        v-tooltip.top="'إلغاء توكن الجهاز'">
+                                        <svg v-if="revokingDeviceId !== code.device_id"
+                                            xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                        </svg>
+                                        <svg v-else class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                stroke-width="4" />
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                        {{ revokingDeviceId === code.device_id ? 'جاري...' : 'إلغاء التوكن' }}
+                                    </button>
+                                    <span v-if="code.status === 'redeemed' && !code.device_id"
+                                        class="text-slate-400 text-sm">-</span>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -334,6 +365,7 @@ const generateLoading = ref(false)
 const activateLoading = ref(false)
 const deleteLoading = ref(false)
 const revokingDeviceId = ref(null)
+const togglingId = ref(null)
 
 const generateForm = ref({ count: 100, duration_days: 30 })
 const activateForm = ref({ from_serial: null, to_serial: null })
@@ -432,6 +464,21 @@ function confirmDelete() {
         toast.add({ severity: 'error', summary: 'خطأ', detail: err?.response?.data?.message || 'حدث خطأ أثناء حذف الأكواد', life: 5000 })
     }).finally(() => {
         deleteLoading.value = false
+    })
+}
+
+function handleToggleStatus(code) {
+    const action = code.status === 'active' ? 'إلغاء تفعيل' : 'تفعيل'
+    if (!confirm(`هل أنت متأكد من ${action} هذا الكود؟`)) return
+    togglingId.value = code.id
+    licenseCodesStore.toggleStatus(code.id).then((res) => {
+        // Update the row status in place to avoid reloading the whole table
+        code.status = res?.data?.data?.status ?? (code.status === 'active' ? 'inactive' : 'active')
+        toast.add({ severity: 'success', summary: 'نجاح', detail: res?.data?.message || 'تم تحديث الحالة بنجاح', life: 4000 })
+    }).catch((err) => {
+        toast.add({ severity: 'error', summary: 'خطأ', detail: err?.response?.data?.message || 'حدث خطأ أثناء تحديث الحالة', life: 5000 })
+    }).finally(() => {
+        togglingId.value = null
     })
 }
 

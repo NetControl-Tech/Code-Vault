@@ -27,7 +27,6 @@ Route::controller(AuthController::class)->group(function () {
 // Public Device Routes
 Route::post('device/activate', [DeviceController::class, 'activate']);
 Route::post('subscription-activate', [DeviceController::class, 'subscriptionActivate']);
-Route::post('get-subscription-info', [DeviceController::class, 'getSubscriptionInfo']);
 
 // =============================================
 // Authenticated Routes (Sanctum)
@@ -82,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('admin/codes/activate-range', [AdminLicenseCodeController::class, 'activateRange'])->name('admin.codes.activate-range');
             Route::post('admin/codes/destroy-range', [AdminLicenseCodeController::class, 'destroyRange'])->name('admin.codes.destroy-range');
             Route::post('admin/codes/{code}/renew', [AdminLicenseCodeController::class, 'renew'])->name('admin.codes.renew');
+            Route::post('admin/codes/{code}/toggle-status', [AdminLicenseCodeController::class, 'toggleStatus'])->name('admin.codes.toggle-status');
             Route::get('admin/codes/export', [AdminLicenseCodeController::class, 'export'])->name('admin.codes.export');
             Route::apiResource('admin/codes', AdminLicenseCodeController::class)->only(['index', 'show'])->names('admin.codes')->parameters([
                 'codes' => 'code'
@@ -123,5 +123,6 @@ Route::middleware('auth:sanctum')->group(function () {
         // Tools
         Route::post('tools/check-url', [ToolsController::class, 'checkUrl']);
         Route::post('tools/report-url', [ToolsController::class, 'reportUrl']);
+        Route::post('get-subscription-info', [DeviceController::class, 'getSubscriptionInfo']);
     });
 });

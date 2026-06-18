@@ -55,6 +55,9 @@ export const useLicenseCodesStore = defineStore('licenseCodes', {
         },
         revokeToken(deviceId) {
             return api.post(`/admin/devices/${deviceId}/revoke-token`)
+        },
+        toggleStatus(id) {
+            return api.post(`/admin/codes/${id}/toggle-status`)
         }
     }
 })

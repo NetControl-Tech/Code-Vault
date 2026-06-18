@@ -115,15 +115,6 @@ class DeviceController extends Controller
         return response()->json($result, $result['code'] ?? 400);
     }
 
-    /**
-     * Activate a subscription using a manually issued redemption code.
-     *
-     * Thin adapter over {@see DeviceService::activate()} that exposes the
-     * mobile contract: `code` instead of `pin_code`, and a boolean-status
-     * response with an ISO-8601 UTC expiry date and no token.
-     * Shares the same rate-limit keys as activate() so attempts can't be split
-     * across the two endpoints to bypass the throttle.
-     */
     public function subscriptionActivate(SubscriptionActivateRequest $request)
     {
         $validated = $request->validated();
@@ -184,7 +175,7 @@ class DeviceController extends Controller
             'status' => true,
             'is_active' => $info['is_active'],
             'expiry_date' => $info['is_active']
-                ? $info['expires_at']->utc()->format('Y-m-d\TH:i:s\Z')
+                ? $info['expires_at']->utc()->format('Y-m-d')
                 : null,
         ], 200);
     }

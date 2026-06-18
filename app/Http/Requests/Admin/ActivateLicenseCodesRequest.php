@@ -23,7 +23,7 @@ class ActivateLicenseCodesRequest extends FormRequest
     {
         return [
             'from_serial' => ['required', 'integer'],
-            'to_serial' => ['required', 'integer', 'gt:from_serial'],
+            'to_serial' => ['required', 'integer', 'gte:from_serial'],
         ];
     }
 }
