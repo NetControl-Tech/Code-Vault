@@ -11,9 +11,11 @@ use App\Http\Controllers\Admin\AdminLicenseCodeController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\BlocklistController;
 use App\Http\Controllers\Api\V1\ToolsController;
+use App\Http\Controllers\Api\V1\ManagedAppController;
 
 use App\Http\Controllers\Admin\AdminBlocklistController;
 use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminManagedAppController;
 
 // =============================================
 // Auth Routes (Public)
@@ -89,6 +91,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('admin/blocklists/bulk-upload', [AdminBlocklistController::class, 'bulkUpload']);
             Route::apiResource('admin/blocklists', AdminBlocklistController::class)->except(['show']);
 
+            // Managed Apps Management (CRUD)
+            Route::apiResource('admin/apps', AdminManagedAppController::class)->except(['show'])->parameters([
+                'apps' => 'app'
+            ]);
+
             // Reported URLs Management (Review + Approve/Reject)
             Route::get('admin/reports', [AdminReportController::class, 'index']);
             Route::post('admin/reports/{report}/approve', [AdminReportController::class, 'approve']);
@@ -109,6 +116,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Family safety list (full domain list, toggled independently in-app)
         Route::get('family-safety-list', [BlocklistController::class, 'familySafetyList']);
+
+        // App access list (per-app internet policy: hard-block vs warn)
+        Route::get('apps-list', [ManagedAppController::class, 'index']);
 
         // Tools
         Route::post('tools/check-url', [ToolsController::class, 'checkUrl']);

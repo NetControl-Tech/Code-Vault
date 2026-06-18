@@ -45,6 +45,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'permissions.create', 'name_ar' => 'إنشاء صلاحية'],
             ['name' => 'permissions.update', 'name_ar' => 'تعديل صلاحية'],
             ['name' => 'permissions.delete', 'name_ar' => 'حذف صلاحية'],
+
+            // Managed Apps permissions - صلاحيات إدارة التطبيقات
+            ['name' => 'apps.view-any', 'name_ar' => 'عرض جميع التطبيقات'],
+            ['name' => 'apps.create', 'name_ar' => 'إضافة تطبيق'],
+            ['name' => 'apps.update', 'name_ar' => 'تعديل تطبيق'],
+            ['name' => 'apps.delete', 'name_ar' => 'حذف تطبيق'],
         ];
 
         // Create all permissions with 'api' guard
@@ -87,6 +93,10 @@ class PermissionSeeder extends Seeder
             'permissions.create',
             'permissions.update',
             'permissions.delete',
+            'apps.view-any',
+            'apps.create',
+            'apps.update',
+            'apps.delete',
         ];
     }
 }

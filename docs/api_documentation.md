@@ -224,6 +224,31 @@ from the ad-block list so the two filters can be toggled independently from the 
 }
 ```
 
+### GET `/apps-list` 🔒 (Device Token)
+Returns the global list of apps with their internet-access configuration (managed by the parent in
+the admin panel). The device applies the config to each installed app.
+
+- **Body:** none.
+- **Auth:** device token only (`Authorization: Bearer {token}`).
+- **Not paginated** — the entire list is returned, sorted by package name.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `package_name` | string | Android package identifier for the app |
+| `internet_block` | boolean | `true` = hard block via VPN. `false` = allow access but show a popup warning. |
+
+```json
+// Response 200
+{
+    "status": true,
+    "apps": [
+        { "package_name": "com.facebook.katana", "internet_block": true },
+        { "package_name": "com.google.android.youtube", "internet_block": true },
+        { "package_name": "com.puzzlegame.app", "internet_block": false }
+    ]
+}
+```
+
 ---
 
 ## 4. Tools (V1) — NetControl App 🔒 (Device Token)
@@ -425,6 +450,57 @@ Content-Type: multipart/form-data
     "invalid_lines_count": 2,
     "total_processed": 153
 }
+```
+
+---
+
+## 7b. Admin: App Management 🔒 (Super Admin)
+
+Manage the global app access list served to devices via `GET /apps-list`.
+
+### GET `/admin/apps`
+List managed apps (paginated).
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `search` | string | | Filter by package name |
+| `per_page` | int | 15 | Results per page |
+
+```json
+// Response 200
+{
+    "current_page": 1,
+    "data": [{ "id": 1, "package_name": "com.facebook.katana", "internet_block": true, "created_at": "..." }],
+    "last_page": 1, "total": 3
+}
+```
+
+### POST `/admin/apps`
+Add an app. `internet_block` is optional and **defaults to `true`** (hard-blocked until allowed).
+
+```json
+// Request
+{ "package_name": "com.facebook.katana", "internet_block": true }
+
+// Response 201
+{ "status": "success", "message": "App added successfully.", "app": { ... } }
+```
+
+### PUT `/admin/apps/{id}`
+Update an app (e.g. toggle `internet_block`).
+
+```json
+// Request
+{ "package_name": "com.facebook.katana", "internet_block": false }
+
+// Response 200
+{ "status": "success", "message": "App updated successfully.", "app": { ... } }
+```
+
+### DELETE `/admin/apps/{id}`
+```json
+// Response 200
+{ "status": "success", "message": "App deleted successfully." }
 ```
 
 ---

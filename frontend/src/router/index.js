@@ -84,6 +84,13 @@ const routes = [
         component: () => import('../pages/admin/blocklists/BlocklistsManager.vue'),
         meta: { requiresAdmin: true, title: 'إدارة القوائم والدروع' }
       },
+      // Apps Manager
+      {
+        path: 'apps-manager',
+        name: 'apps-manager',
+        component: () => import('../pages/admin/apps/AppsManager.vue'),
+        meta: { requiresAdmin: true, title: 'إدارة التطبيقات' }
+      },
       // User Reports
       {
         path: 'user-reports',
