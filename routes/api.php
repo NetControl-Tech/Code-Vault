@@ -105,6 +105,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Ad blocklist (full domain list for DNS-level blocking)
         Route::get('ad-block-list', [BlocklistController::class, 'adBlockList']);
 
+        // Family safety list (full domain list, toggled independently in-app)
+        Route::get('family-safety-list', [BlocklistController::class, 'familySafetyList']);
+
         // Tools
         Route::post('tools/check-url', [ToolsController::class, 'checkUrl']);
         Route::post('tools/report-url', [ToolsController::class, 'reportUrl']);

@@ -149,6 +149,29 @@ response so ads never load.
 }
 ```
 
+### GET `/family-safety-list` 🔒 (Device Token)
+Returns the **complete** list of family-safety / parental-control domains (adult content, gambling,
+and other age-restricted sites). Same DNS-interception mechanism as the ad-block list. The filter is
+toggled on/off by the parent in-app, but the list always comes from the server. Kept **separate**
+from the ad-block list so the two filters can be toggled independently from the parent dashboard.
+
+- **Body:** none.
+- **Auth:** device token only (`Authorization: Bearer {token}`).
+- **Not paginated** — the entire `family`-category list is returned, sorted, as plain strings.
+
+```json
+// Response 200
+{
+    "status": true,
+    "domains": [
+        "bet365.com",
+        "pornhub.com",
+        "xnxx.com",
+        "xvideos.com"
+    ]
+}
+```
+
 ---
 
 ## 4. Tools (V1) — NetControl App 🔒 (Device Token)

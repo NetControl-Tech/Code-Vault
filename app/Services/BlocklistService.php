@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\BlocklistCategory;
 use App\Models\BlocklistDomain;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,27 @@ class BlocklistService
      */
     public function getAdBlockDomains(): array
     {
-        return BlocklistDomain::ads()
+        return $this->getDomainsByCategory(BlocklistCategory::Ads);
+    }
+
+    /**
+     * Return all family-safety domains (adult content, gambling, etc.) as a
+     * flat array of strings. The parental-control filter is toggled in-app, but
+     * the list itself always comes from the server. Kept separate from the
+     * ad-block list so the two filters toggle independently.
+     */
+    public function getFamilySafetyDomains(): array
+    {
+        return $this->getDomainsByCategory(BlocklistCategory::Family);
+    }
+
+    /**
+     * Return every domain in a category as a sorted, flat array of strings.
+     * Used by the mobile filters that download a whole category at once.
+     */
+    private function getDomainsByCategory(BlocklistCategory $category): array
+    {
+        return BlocklistDomain::where('category', $category->value)
             ->orderBy('domain')
             ->pluck('domain')
             ->all();

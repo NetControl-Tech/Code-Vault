@@ -51,4 +51,17 @@ class BlocklistController extends Controller
             'domains' => $this->blocklistService->getAdBlockDomains(),
         ]);
     }
+
+    /**
+     * Return the full list of family-safety domains (adult content, gambling,
+     * age-restricted sites). Kept separate from the ad-block list so the
+     * parental-control filter can be toggled independently in the app.
+     */
+    public function familySafetyList()
+    {
+        return response()->json([
+            'status'  => true,
+            'domains' => $this->blocklistService->getFamilySafetyDomains(),
+        ]);
+    }
 }
