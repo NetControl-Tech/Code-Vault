@@ -78,6 +78,36 @@ Activate a device using a license PIN code. **Rate limited: 3 attempts / 15 min 
 { "status": "error", "message": "Too many attempts. Please try again later." }
 ```
 
+### POST `/subscription-activate`
+Activate a subscription using a manually issued redemption code (reseller / promo / direct sale).
+Validates the code, marks it **used (single-use)**, links the subscription to the device, and records
+which `device_id` redeemed which code for audit. **Rate limited: 3 attempts / 15 min per IP and
+device** (shares the throttle with `/device/activate`). `expiry_date` is **ISO 8601 UTC**.
+
+```json
+// Request
+{
+    "code": "SUBSCRIPTION-CODE",
+    "device_id": "UD7VD7-DSHG76-JDBCG6"
+}
+
+// Response 200 (Success)
+{
+    "status": true,
+    "message": "Subscription activated successfully",
+    "expiry_date": "2027-06-18T00:00:00Z"
+}
+
+// Response 400/403 (Invalid or already-used code)
+{ "status": false, "message": "Invalid or already used code" }
+
+// Response 403 (Device already subscribed)
+{ "status": false, "message": "This device already has an active subscription" }
+
+// Response 429 (Rate limited)
+{ "status": false, "message": "Too many attempts. Please try again later." }
+```
+
 ### GET `/v1/device/status` 🔒 (Device Token)
 Check current subscription status.
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ActivateDeviceRequest;
+use App\Http\Requests\Api\V1\SubscriptionActivateRequest;
 use App\Http\Requests\Api\StoreDeviceRequest;
 use App\Models\Device;
 use App\Services\DeviceService;
@@ -111,6 +112,61 @@ class DeviceController extends Controller
         }
 
         return response()->json($result, $result['code'] ?? 400);
+    }
+
+    /**
+     * Activate a subscription using a manually issued redemption code.
+     *
+     * Thin adapter over {@see DeviceService::activate()} that exposes the
+     * mobile contract: `code` instead of `pin_code`, and a boolean-status
+     * response with an ISO-8601 UTC expiry date and no token.
+     * Shares the same rate-limit keys as activate() so attempts can't be split
+     * across the two endpoints to bypass the throttle.
+     */
+    public function subscriptionActivate(SubscriptionActivateRequest $request)
+    {
+        $validated = $request->validated();
+        $ip = $request->ip();
+        $deviceId = $validated['device_id'];
+
+        $ipKey = 'activate_ip:' . $ip;
+        $deviceKey = 'activate_device:' . $deviceId;
+        $maxAttempts = 3;
+        $decaySecs = 15 * 60; // 15 minutes
+
+        if (RateLimiter::tooManyAttempts($ipKey, $maxAttempts) || RateLimiter::tooManyAttempts($deviceKey, $maxAttempts)) {
+            Log::warning('Brute force subscription-activate blocked', ['ip' => $ip, 'device_id' => $deviceId]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Too many attempts. Please try again later.',
+            ], 429);
+        }
+
+        $result = $this->deviceService->activate($validated['code'], $deviceId);
+
+        if ($result['status'] === 'success') {
+            RateLimiter::clear($ipKey);
+            RateLimiter::clear($deviceKey);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Subscription activated successfully',
+                'expiry_date' => optional($result['expires_at'])?->utc()->format('Y-m-d\TH:i:s\Z'),
+            ], 200);
+        }
+
+        RateLimiter::hit($ipKey, $decaySecs);
+        RateLimiter::hit($deviceKey, $decaySecs);
+
+        // Collapse the service's varied error messages into the spec's two messages.
+        $alreadyActive = ($result['message'] ?? '') === 'Device already has a linked license code.';
+
+        return response()->json([
+            'status' => false,
+            'message' => $alreadyActive
+                ? 'This device already has an active subscription'
+                : 'Invalid or already used code',
+        ], $result['code'] ?? 400);
     }
 
     /**
