@@ -177,10 +177,7 @@
         </div>
 
         <!-- Generate Modal -->
-        <div v-if="showGenerateModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            @click.self="!generateLoading && (showGenerateModal = false)">
-            <div class="card max-w-sm w-full overflow-hidden">
-                <div class="h-1 bg-sky-500"></div>
+        <AppModal v-model:open="showGenerateModal" max-width="max-w-sm" accent="bg-sky-500" :persistent="generateLoading">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-500" fill="none"
@@ -218,14 +215,10 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+        </AppModal>
 
         <!-- Activate Range Modal -->
-        <div v-if="showActivateModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            @click.self="!activateLoading && (showActivateModal = false)">
-            <div class="card max-w-sm w-full overflow-hidden">
-                <div class="h-1 bg-green-500"></div>
+        <AppModal v-model:open="showActivateModal" max-width="max-w-sm" accent="bg-green-500" :persistent="activateLoading">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none"
@@ -265,14 +258,10 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+        </AppModal>
 
         <!-- Delete Range Modal -->
-        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            @click.self="!deleteLoading && (showDeleteModal = false)">
-            <div class="card max-w-sm w-full overflow-hidden">
-                <div class="h-1 bg-red-500"></div>
+        <AppModal v-model:open="showDeleteModal" max-width="max-w-sm" accent="bg-red-500" :persistent="deleteLoading">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold mb-4 text-red-600 dark:text-red-400 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -313,8 +302,7 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+        </AppModal>
     </div>
 </template>
 
@@ -326,6 +314,7 @@ import Select from 'primevue/select'
 import Toast from 'primevue/toast'
 import AppSpinner from '../../../components/core/AppSpinner.vue'
 import InputText from 'primevue/inputtext'
+import AppModal from '../../../components/core/AppModal.vue'
 
 const licenseCodesStore = useLicenseCodesStore()
 const toast = useToast()

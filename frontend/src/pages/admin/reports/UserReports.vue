@@ -145,10 +145,7 @@
         </div>
 
         <!-- Approve Modal -->
-        <div v-if="showApproveModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            @click.self="!submitting && (showApproveModal = false)">
-            <div class="card max-w-sm w-full overflow-hidden">
-                <div class="h-1 bg-green-500"></div>
+        <AppModal v-model:open="showApproveModal" max-width="max-w-sm" accent="bg-green-500" :persistent="submitting">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none"
@@ -178,14 +175,10 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+        </AppModal>
 
         <!-- Reject Confirm Modal -->
-        <div v-if="showRejectModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            @click.self="!rejecting && (showRejectModal = false)">
-            <div class="card max-w-sm w-full overflow-hidden">
-                <div class="h-1 bg-red-500"></div>
+        <AppModal v-model:open="showRejectModal" max-width="max-w-sm" accent="bg-red-500" :persistent="rejecting">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold mb-4 text-red-600 dark:text-red-400 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -209,8 +202,7 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
+        </AppModal>
     </div>
 </template>
 
@@ -221,6 +213,7 @@ import { useToast } from 'primevue/usetoast'
 import Toast from 'primevue/toast'
 import Select from 'primevue/select'
 import AppSpinner from '../../../components/core/AppSpinner.vue'
+import AppModal from '../../../components/core/AppModal.vue'
 
 const toast = useToast()
 

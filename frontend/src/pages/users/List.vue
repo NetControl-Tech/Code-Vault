@@ -141,8 +141,9 @@
         </div>
 
         <!-- Toggle Active Modal -->
-        <div v-if="showDeactivateModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div class="card p-6 max-w-sm w-full">
+        <AppModal v-model:open="showDeactivateModal" max-width="max-w-sm"
+            :accent="selectedUser?.is_active ? 'bg-red-500' : 'bg-sky-500'">
+            <div class="p-6">
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                     {{ selectedUser?.is_active ? 'تعطيل المستخدم' : 'تفعيل المستخدم' }}
                 </h3>
@@ -161,10 +162,10 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </AppModal>
         <!-- Delete Confirmation Modal -->
-        <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div class="card p-6 max-w-sm w-full">
+        <AppModal v-model:open="showDeleteModal" max-width="max-w-sm" accent="bg-red-500">
+            <div class="p-6">
                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">
                     حذف المستخدم
                 </h3>
@@ -180,7 +181,7 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </AppModal>
     </div>
 </template>
 <script setup>
@@ -190,6 +191,7 @@ import { useRBACStore } from '../../stores/RBAC'
 import { useCan } from '../../composables/useCan'
 import Select from 'primevue/select'
 import AppSpinner from '../../components/core/AppSpinner.vue'
+import AppModal from '../../components/core/AppModal.vue'
 const usersStore = useUsersStore()
 const rbacStore = useRBACStore()
 const { can } = useCan()
