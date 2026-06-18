@@ -24,13 +24,25 @@ class BlocklistService
     }
 
     /**
+     * Return all ad-category domains as a flat array of strings.
+     * Used by the mobile DNS ad-blocker which consumes the entire list at once.
+     */
+    public function getAdBlockDomains(): array
+    {
+        return BlocklistDomain::ads()
+            ->orderBy('domain')
+            ->pluck('domain')
+            ->all();
+    }
+
+    /**
      * Identify valid domains from a bulk upload txt or csv file and insert them
      */
     public function bulkImport(UploadedFile $file, string $category): array
     {
         $contents = file_get_contents($file->getRealPath());
         $lines = explode("\n", str_replace("\r", "", $contents));
-        
+
         $validDomains = [];
         $invalidLinesCount = 0;
 
@@ -53,11 +65,11 @@ class BlocklistService
         }
 
         if (empty($validDomains)) {
-             return [
-                 'status' => 'error',
-                 'message' => 'No valid domains found in the uploaded file.',
-                 'invalid_lines_count' => $invalidLinesCount,
-             ];
+            return [
+                'status' => 'error',
+                'message' => 'No valid domains found in the uploaded file.',
+                'invalid_lines_count' => $invalidLinesCount,
+            ];
         }
 
         $now = now();
@@ -72,12 +84,12 @@ class BlocklistService
         }
 
         $insertedCount = 0;
-        
+
         // Insert in chunks using insertOrIgnore to skip existing duplicates safely
         DB::transaction(function () use ($insertData, &$insertedCount) {
-             foreach (array_chunk($insertData, 1000) as $chunk) {
-                 $insertedCount += DB::table('blocklist_domains')->insertOrIgnore($chunk);
-             }
+            foreach (array_chunk($insertData, 1000) as $chunk) {
+                $insertedCount += DB::table('blocklist_domains')->insertOrIgnore($chunk);
+            }
         });
 
         return [

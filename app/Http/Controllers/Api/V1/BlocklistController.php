@@ -39,4 +39,16 @@ class BlocklistController extends Controller
         $perPage = $request->input('per_page', 50);
         return response()->json($this->blocklistService->getByCategory(BlocklistCategory::Privacy->value, $perPage));
     }
+
+    /**
+     * Return the full list of ad/tracker domains for DNS-level ad blocking.
+     * Consumed in full by the mobile app on launch and periodic refresh.
+     */
+    public function adBlockList()
+    {
+        return response()->json([
+            'status'  => true,
+            'domains' => $this->blocklistService->getAdBlockDomains(),
+        ]);
+    }
 }

@@ -102,6 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('device/status', [DeviceController::class, 'status']);
         Route::post('device/unlink', [DeviceController::class, 'unlink']);
 
+        // Ad blocklist (full domain list for DNS-level blocking)
+        Route::get('ad-block-list', [BlocklistController::class, 'adBlockList']);
+
         // Tools
         Route::post('tools/check-url', [ToolsController::class, 'checkUrl']);
         Route::post('tools/report-url', [ToolsController::class, 'reportUrl']);

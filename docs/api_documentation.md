@@ -127,6 +127,28 @@ Returns paginated domains for the specified category.
 }
 ```
 
+### GET `/ad-block-list` 🔒 (Device Token)
+Returns the **complete** list of ad/tracker domains the app blocks at the DNS level. The mobile app
+fetches this on launch and refreshes it periodically; any domain in the list returns a null DNS
+response so ads never load.
+
+- **Body:** none.
+- **Auth:** device token only (`Authorization: Bearer {token}`).
+- **Not paginated** — the entire `ads`-category list is returned, sorted, as plain strings.
+
+```json
+// Response 200
+{
+    "status": true,
+    "domains": [
+        "ads.google.com",
+        "ads.facebook.com",
+        "doubleclick.net",
+        "pagead2.googlesyndication.com"
+    ]
+}
+```
+
 ---
 
 ## 4. Tools (V1) — NetControl App 🔒 (Device Token)
