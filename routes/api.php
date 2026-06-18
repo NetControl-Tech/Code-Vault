@@ -25,6 +25,7 @@ Route::controller(AuthController::class)->group(function () {
 // Public Device Routes
 Route::post('device/activate', [DeviceController::class, 'activate']);
 Route::post('subscription-activate', [DeviceController::class, 'subscriptionActivate']);
+Route::post('get-subscription-info', [DeviceController::class, 'getSubscriptionInfo']);
 
 // =============================================
 // Authenticated Routes (Sanctum)

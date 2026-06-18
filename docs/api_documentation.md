@@ -108,6 +108,28 @@ device** (shares the throttle with `/device/activate`). `expiry_date` is **ISO 8
 { "status": false, "message": "Too many attempts. Please try again later." }
 ```
 
+### POST `/get-subscription-info`
+Returns the current subscription state for a device. Public — the app sends `device_id` in the body
+(no token). Called on launch and **polled every few seconds after a Google Play purchase** until
+`is_active` becomes `true`. Reflects subscriptions from **both** manual codes and Google Play IAP,
+since both are linked to the same `device_id`. An unknown device, no subscription, or an expired
+subscription all return `is_active: false` (a `200`, never an error). `expiry_date` is **ISO 8601 UTC**
+when active, otherwise `null`.
+
+```json
+// Request
+{ "device_id": "UD7VD7-DSHG76-JDBCG6" }
+
+// Response 200 (Active subscription)
+{ "status": true, "is_active": true, "expiry_date": "2027-06-18T00:00:00Z" }
+
+// Response 200 (No active subscription / unknown device / expired)
+{ "status": true, "is_active": false, "expiry_date": null }
+
+// Response 400 (Missing device_id)
+{ "status": false, "message": "The device id field is required." }
+```
+
 ### GET `/v1/device/status` 🔒 (Device Token)
 Check current subscription status.
 

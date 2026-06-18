@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ActivateDeviceRequest;
 use App\Http\Requests\Api\V1\SubscriptionActivateRequest;
+use App\Http\Requests\Api\V1\SubscriptionInfoRequest;
 use App\Http\Requests\Api\StoreDeviceRequest;
 use App\Models\Device;
 use App\Services\DeviceService;
@@ -167,6 +168,25 @@ class DeviceController extends Controller
                 ? 'This device already has an active subscription'
                 : 'Invalid or already used code',
         ], $result['code'] ?? 400);
+    }
+
+    /**
+     * Return the current subscription state for a device_id (public; polled by
+     * the app on launch and after a Google Play purchase). Covers subscriptions
+     * from manual codes and (once ingested) Google Play IAP, since both link to
+     * the same device_id. Never errors on unknown/expired/no-subscription.
+     */
+    public function getSubscriptionInfo(SubscriptionInfoRequest $request)
+    {
+        $info = $this->deviceService->getSubscriptionInfo($request->validated('device_id'));
+
+        return response()->json([
+            'status' => true,
+            'is_active' => $info['is_active'],
+            'expiry_date' => $info['is_active']
+                ? $info['expires_at']->utc()->format('Y-m-d\TH:i:s\Z')
+                : null,
+        ], 200);
     }
 
     /**

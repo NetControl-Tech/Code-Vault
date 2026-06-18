@@ -168,6 +168,34 @@ class DeviceService
         ];
     }
 
+    /**
+     * Resolve the current subscription state for a device_id, across all sources.
+     *
+     * Unknown device, no subscription, and expired all collapse to inactive — the
+     * caller never errors on this lookup (the mobile app polls it after purchase).
+     *
+     * TODO(IAP): when the `subscriptions` table is added for Google Play IAP, this
+     * becomes the single place to read the latest active subscription across both
+     * manual codes and IAP. For now it reads the device's linked LicenseCode.
+     *
+     * @return array{is_active: bool, expires_at: ?\Illuminate\Support\Carbon}
+     */
+    public function getSubscriptionInfo(string $deviceId): array
+    {
+        $device = Device::where('device_id', $deviceId)->first();
+        $licenseCode = $device?->licenseCode;
+
+        $isActive = $licenseCode
+            && $licenseCode->status === LicenseCodeStatus::Redeemed
+            && $licenseCode->expires_at
+            && now()->lessThanOrEqualTo($licenseCode->expires_at);
+
+        return [
+            'is_active' => (bool) $isActive,
+            'expires_at' => $isActive ? $licenseCode->expires_at : null,
+        ];
+    }
+
     // ──────────────────────────────────────────────
     //  Unlink
     // ──────────────────────────────────────────────
