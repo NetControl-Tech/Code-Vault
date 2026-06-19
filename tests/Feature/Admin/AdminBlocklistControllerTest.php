@@ -39,6 +39,29 @@ class AdminBlocklistControllerTest extends TestCase
             ->assertJsonPath('data.0.domain', 'baddomain.com');
     }
 
+    public function test_admin_can_get_all_blocklist_domains_across_categories()
+    {
+        BlocklistDomain::create(['domain' => 'familybad.com', 'category' => BlocklistCategory::Family->value]);
+        BlocklistDomain::create(['domain' => 'adsbad.com', 'category' => BlocklistCategory::Ads->value]);
+        BlocklistDomain::create(['domain' => 'privacybad.com', 'category' => BlocklistCategory::Privacy->value]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/admin/blocklists?category=all');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(3, 'data')
+            ->assertJsonPath('total', 3);
+    }
+
+    public function test_admin_get_blocklists_rejects_invalid_category()
+    {
+        $response = $this->actingAs($this->admin)
+            ->getJson('/api/admin/blocklists?category=bogus');
+
+        $response->assertStatus(400)
+            ->assertJson(['status' => 'error']);
+    }
+
     public function test_admin_can_add_domain()
     {
         $response = $this->actingAs($this->admin)

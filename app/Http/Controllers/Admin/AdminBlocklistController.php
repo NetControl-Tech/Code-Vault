@@ -23,16 +23,21 @@ class AdminBlocklistController extends Controller
     public function index(Request $request)
     {
         $category = $request->query('category');
-        
+        $perPage = $request->input('per_page', 15);
+        $search = $request->input('search');
+
+        if ($category === 'all') {
+            $domains = $this->blocklistService->getAll($perPage, $search);
+
+            return response()->json($domains);
+        }
+
         if (!$category || !BlocklistCategory::tryFrom($category)) {
              return response()->json([
                  'status' => 'error',
                  'message' => 'Valid category is required.',
              ], 400);
         }
-
-        $perPage = $request->input('per_page', 15);
-        $search = $request->input('search');
 
         $domains = $this->blocklistService->getByCategory($category, $perPage, $search);
 

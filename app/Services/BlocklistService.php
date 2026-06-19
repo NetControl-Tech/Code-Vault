@@ -25,6 +25,20 @@ class BlocklistService
     }
 
     /**
+     * Get paginated domains across every category
+     */
+    public function getAll(int $perPage = 15, ?string $search = null)
+    {
+        $query = BlocklistDomain::query();
+
+        if ($search) {
+            $query->where('domain', 'like', "%{$search}%");
+        }
+
+        return $query->latest()->paginate($perPage);
+    }
+
+    /**
      * Return all ad-category domains as a flat array of strings.
      * Used by the mobile DNS ad-blocker which consumes the entire list at once.
      */

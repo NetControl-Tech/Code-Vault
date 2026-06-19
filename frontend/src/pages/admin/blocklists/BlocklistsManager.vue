@@ -9,7 +9,7 @@
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white">إدارة القوائم والدروع</h1>
                 <p class="text-slate-600 dark:text-slate-400 mt-1">إدارة الروابط المحجوبة لكل درع بشكل مستقل</p>
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div v-if="!isAllView" class="flex flex-wrap gap-2">
                 <button @click="openBulkModal" class="btn btn-secondary">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
@@ -39,7 +39,8 @@
                             ? 'border-sky-500 text-sky-600 dark:text-sky-400'
                             : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'
                     ]">
-                    <svg v-if="cat.value === 'family'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    <svg v-if="cat.value === 'all'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                    <svg v-else-if="cat.value === 'family'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                     <svg v-else-if="cat.value === 'social'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                     <svg v-else-if="cat.value === 'ads'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
@@ -75,6 +76,7 @@
                     <thead>
                         <tr>
                             <th>نطاق الرابط (Domain)</th>
+                            <th v-if="isAllView">القائمة</th>
                             <th>تاريخ الإضافة</th>
                             <th>الإجراءات</th>
                         </tr>
@@ -83,6 +85,9 @@
                         <tr v-for="domain in domains" :key="domain.id">
                             <td>
                                 <span class="font-semibold text-slate-700 dark:text-slate-200">{{ domain.domain }}</span>
+                            </td>
+                            <td v-if="isAllView">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">{{ categoryLabel(domain.category) }}</span>
                             </td>
                             <td class="text-slate-500 dark:text-slate-400">
                                 {{ domain.created_at ? new Date(domain.created_at).toLocaleDateString('ar-EG') : '-' }}
@@ -243,7 +248,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { blocklistApi } from '../../../services/blocklistApi'
 import { useToast } from 'primevue/usetoast'
 import Toast from 'primevue/toast'
@@ -254,6 +259,7 @@ import AppModal from '../../../components/core/AppModal.vue'
 const toast = useToast()
 
 const categories = [
+    { label: 'الكل', value: 'all', desc: 'كل الروابط في جميع القوائم' },
     { label: 'أمان الأسرة', value: 'family', desc: 'المواقع الإباحية والضارة' },
     { label: 'السوشيال ميديا', value: 'social', desc: 'منصات التواصل الاجتماعي' },
     { label: 'الإعلانات', value: 'ads', desc: 'سيرفرات الإعلانات المزعجة' },
@@ -262,6 +268,11 @@ const categories = [
 
 const activeTabIndex = ref(0)
 const activeCategory = ref(categories[0].value)
+const isAllView = computed(() => activeCategory.value === 'all')
+
+function categoryLabel(value) {
+    return categories.find(cat => cat.value === value)?.label ?? value
+}
 
 const domains = ref([])
 const loading = ref(false)
@@ -331,7 +342,9 @@ function saveDomain() {
     if (!domainForm.value.domain) return
     submitting.value = true
 
-    const payload = { domain: domainForm.value.domain, category: activeCategory.value }
+    // Edits carry the row's own category; new domains use the active category tab.
+    const category = domainForm.value.id ? domainForm.value.category : activeCategory.value
+    const payload = { domain: domainForm.value.domain, category }
     const promise = domainForm.value.id
         ? blocklistApi.updateDomain(domainForm.value.id, payload)
         : blocklistApi.addDomain(payload)
